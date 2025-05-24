@@ -1,13 +1,17 @@
 #
 #
 
-all: hms
+all: hms.dylib
+
+CFLAGS += -I ../sqlite/sqlite-autoconf-3490200
+CFLAGS += -g -fPIC
 
 clean:
-	rm -f hms *.BAK
+	rm -f *.dylib *.BAK
 
-hms: hms.c
-	$(CC) $(CFLAGS) -o $@ $<
+%.dylib: %.c
+	$(CC) $(CFLAGS) -dynamiclib -o $@ $< 
+
 
 format:
 	find . -name '*.[ch]' | xargs -n1 indent -nut -i4

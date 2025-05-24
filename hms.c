@@ -1,30 +1,52 @@
+/*
+ * Extension for sqlite to parse a duration.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 
-float
+#include "sqlite3ext.h"
+SQLITE_EXTENSION_INIT1
+#include <assert.h>
+
+#define hms "duration"
+
+/*
+ * Parse an hour:min:sec.s string into a float of seconds. Return -1.0 on
+ * parsing errors.
+ * 
+ * Shortcomings: %f accepts a negative number; there could be input beyond the
+ * accepted string.
+ */
+static float
 hms_to_sec(const char *duration)
 {
     int             hours = 0, minutes = 0;
     float           seconds = 0.0;
-    int             values;
+    int             items;
 
-    values = sscanf(duration, "%u:%u:%f", &hours, &minutes, &seconds);
-    if (values == 3) {
+    items = sscanf(duration, "%u:%u:%f", &hours, &minutes, &seconds);
+    if (items == 3) {
         return (float)hours *3600.0 + (float)minutes *60.0 + seconds;
     }
-    values = sscanf(duration, "%u:%f", &minutes, &seconds);
-    if (values == 2) {
+    items = sscanf(duration, "%u:%f", &minutes, &seconds);
+    if (items == 2) {
         return (float)minutes *60.0 + seconds;
     }
-    values = sscanf(duration, "%f", &seconds);
-    if (values == 1) {
+    items = sscanf(duration, "%f", &seconds);
+    if (items == 1) {
         return seconds;
     }
     return -1.0;
 }
 
-char           *
+/*
+ * Format a positive float duration (seconds) into a hh:mm:ss.s string buffer
+ * provided by the caller. Returns the string buffer on success or NULL on
+ * failure.
+ */
+static char    *
 sec_to_hms(float seconds, char *buffer, size_t buffer_size)
 {
     if (buffer == NULL || buffer_size <= 0 || seconds < 0) {
@@ -46,61 +68,52 @@ sec_to_hms(float seconds, char *buffer, size_t buffer_size)
     return buffer;
 }
 
-
-int
-main()
+/*
+ * Implementation for sqlite
+ */
+static void
+hms_to_sec_func(
+                sqlite3_context * context,
+                int argc,
+                sqlite3_value ** argv
+)
 {
-    char            buf[20];
+    if (argc != 1) {
+        sqlite3_result_error(context, hms " requires exactly one argument", -1);
+        return;
+    }
+    const unsigned char *text = sqlite3_value_text(argv[0]);
+    if (text == NULL) {
+        sqlite3_result_null(context);
+        return;
+    }
+    double          seconds = hms_to_sec((const char *)text);
+    if (seconds >= 0.0)
+        sqlite3_result_double(context, seconds);
+    else
+        sqlite3_result_error(context, hms " failed to parse argument", -1);
 
-    char            duration1[] = "1:30:15.5";
-    char            duration2[] = "5:45.25";
-    char            duration3[] = "0:10:00";
-    char            duration4[] = "2:05.3";
-    char            duration5[] = "invalid";
-    char            duration6[] = "1:a0:10";
+    return;
+}
 
-    float           seconds1 = hms_to_sec(duration1);
-    float           seconds2 = hms_to_sec(duration2);
-    float           seconds3 = hms_to_sec(duration3);
-    float           seconds4 = hms_to_sec(duration4);
-    float           seconds5 = hms_to_sec(duration5);
-    float           seconds6 = hms_to_sec(duration6);
+/*
+ * Registration of functions in this file when this library is loaded
+ */
 
-    if (seconds1 >= 0) {
-        printf("%s = %.2f seconds\n", duration1, seconds1);
-        printf("%s\n", sec_to_hms(seconds1, buf, sizeof buf));
-    } else
-        printf("Error converting %s\n", duration1);
-
-    if (seconds2 >= 0) {
-        printf("%s = %.2f seconds\n", duration2, seconds2);
-        printf("%s\n", sec_to_hms(seconds2, buf, sizeof buf));
-    } else
-        printf("Error converting %s\n", duration2);
-
-    if (seconds3 >= 0) {
-        printf("%s = %.2f seconds\n", duration3, seconds3);
-        printf("%s\n", sec_to_hms(seconds3, buf, sizeof buf));
-    } else
-        printf("Error converting %s\n", duration3);
-
-    if (seconds4 >= 0) {
-        printf("%s = %.2f seconds\n", duration4, seconds4);
-        printf("%s\n", sec_to_hms(seconds4, buf, sizeof buf));
-    } else
-        printf("Error converting %s\n", duration4);
-
-    if (seconds5 >= 0) {
-        printf("%s = %.2f seconds\n", duration5, seconds5);
-        printf("%s\n", sec_to_hms(seconds5, buf, sizeof buf));
-    } else
-        printf("Error converting %s\n", duration5);
-
-    if (seconds6 >= 0) {
-        printf("%s = %.2f seconds\n", duration6, seconds6);
-        printf("%s\n", sec_to_hms(seconds6, buf, sizeof buf));
-    } else
-        printf("Error converting %s\n", duration6);
-
-    return 0;
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
+    int             sqlite3_hms_init(
+                                                     sqlite3 * db,
+                                                     char **pzErrMsg,
+                                           const sqlite3_api_routines * pApi
+)
+{
+    int             rc = SQLITE_OK;
+    SQLITE_EXTENSION_INIT2(pApi);
+    (void)pzErrMsg;             /* Unused parameter */
+    rc = sqlite3_create_function(db, hms, 1,
+                      SQLITE_UTF8 | SQLITE_INNOCUOUS | SQLITE_DETERMINISTIC,
+                                 0, hms_to_sec_func, 0, 0);
+    return rc;
 }
