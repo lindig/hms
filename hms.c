@@ -31,14 +31,14 @@ sec_to_hms(float seconds, char *buffer, size_t buffer_size)
         return NULL;
     }
     double          whole_seconds = floor(seconds);
-    double          fractional_part = fmod(seconds, 1.0);
+    double          rem = fmod(seconds, 60.0);
 
     int             hours = (int)(whole_seconds / 3600);
     int             secs = (int)whole_seconds % 3600;
-    int             tenths = (int)(fractional_part * 10.0);
+    int             mins = secs / 60;
 
-    int             ret = snprintf(buffer, buffer_size, "%d:%02d:%02d.%1d",
-                                   hours, secs / 60, secs % 60, tenths);
+    int             ret = snprintf(buffer, buffer_size, "%d:%02d:%06.3f",
+                                   hours, mins, rem);
 
     if (ret < 0 || (size_t) ret >= buffer_size) {
         return NULL;
