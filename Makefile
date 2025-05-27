@@ -10,9 +10,9 @@ CFLAGS += -I ../sqlite/sqlite-autoconf-3490200
 CFLAGS += -g -fPIC
 
 # K&R style indentation
-INDENT += -nbad -bap -bbo -nbc -br -brs -c33 -cd33 -ncdb -ce -ci4 -cli0
-INDENT += -cp33 -cs -d0 -di1 -nfc1 -nfca -hnl -i4 -ip0 -l75 -lp -npcs
-INDENT += -nprs -npsl -saf -sai -saw -nsc -nsob -nss
+INDENT += -nbad -bap -nbc -br -brs -c33 -cd33 -ncdb -ce -ci4 -cli0
+INDENT += -d0 -di1 -nfc1 -i4 -ip0 -l75 -lp -npcs
+INDENT += -npsl -nsc -nsob
 
 clean:
 	rm -f *.dylib *.BAK *.so
