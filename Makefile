@@ -16,6 +16,7 @@ INDENT += -nprs -npsl -saf -sai -saw -nsc -nsob -nss
 
 clean:
 	rm -f *.dylib *.BAK *.so
+	rm -f *.[ch]~ *.dylib-*
 
 # Linux
 %.so: %.c
