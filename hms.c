@@ -9,7 +9,6 @@
 #include "sqlite3ext.h"
 SQLITE_EXTENSION_INIT1
 #include <assert.h>
-#define hms "duration"
 /*
  * Parse an hour:min:sec.s string into a float of seconds. Return -1.0 on
  * parsing errors.
@@ -71,7 +70,8 @@ static void
 hms_to_sec_func(sqlite3_context *context, int argc, sqlite3_value **argv)
 {
     if (argc != 1) {
-        sqlite3_result_error(context, hms " requires exactly one argument",
+        sqlite3_result_error(context,
+                             "duration() requires exactly one argument",
                              -1);
         return;
     }
@@ -84,7 +84,8 @@ hms_to_sec_func(sqlite3_context *context, int argc, sqlite3_value **argv)
     if (seconds >= 0.0)
         sqlite3_result_double(context, seconds);
     else
-        sqlite3_result_error(context, hms " failed to parse argument", -1);
+        sqlite3_result_error(context,
+                             "duration() failed to parse argument", -1);
 
     return;
 }
