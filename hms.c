@@ -112,7 +112,7 @@ static void sec_to_hms_func(sqlite3_context *context,
         seconds = sqlite3_value_double(argv[0]);
     }
 
-    char buffer[64];            // Adjust buffer size as needed for potential precision
+    char buffer[64];
     char *result = sec_to_hms(seconds, buffer, sizeof buffer);
 
     if (!result) {
@@ -135,7 +135,7 @@ int sqlite3_hms_init(sqlite3 *db,
     int rc = SQLITE_OK;
     SQLITE_EXTENSION_INIT2(pApi);
     (void) pzErrMsg;            /* Unused parameter */
-    rc = sqlite3_create_function(db, hms, 1,
+    rc = sqlite3_create_function(db, "duration", 1,
                                  SQLITE_UTF8 | SQLITE_INNOCUOUS |
                                  SQLITE_DETERMINISTIC, 0, hms_to_sec_func,
                                  0, 0);
