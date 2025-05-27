@@ -43,7 +43,7 @@ static float hms_to_sec(const char *duration)
  * provided by the caller. Returns the string buffer on success or NULL on
  * failure.
  */
-static char *sec_to_hms(float seconds, char *buffer, size_t buffer_size)
+static char *sec_to_hms(double seconds, char *buffer, size_t buffer_size)
 {
     if (buffer == NULL || buffer_size <= 0 || seconds < 0) {
         return NULL;
@@ -89,6 +89,39 @@ hms_to_sec_func(sqlite3_context *context, int argc, sqlite3_value **argv)
     return;
 }
 
+static void sec_to_hms_func(sqlite3_context *context,
+                            int argc, sqlite3_value **argv)
+{
+    if (argc != 1) {
+        sqlite3_result_error(context,
+                             "hms() requires exactly one argument", -1);
+        return;
+    }
+
+    int value_type = sqlite3_value_numeric_type(argv[0]);
+    if (value_type != SQLITE_INTEGER && value_type != SQLITE_FLOAT) {
+        sqlite3_result_error(context, "hms() argument must be a number",
+                             -1);
+        return;
+    }
+
+    double seconds;
+    if (value_type == SQLITE_INTEGER) {
+        seconds = (double) sqlite3_value_int64(argv[0]);
+    } else {
+        seconds = sqlite3_value_double(argv[0]);
+    }
+
+    char buffer[64];            // Adjust buffer size as needed for potential precision
+    char *result = sec_to_hms(seconds, buffer, sizeof buffer);
+
+    if (!result) {
+        sqlite3_result_error(context, "hms() conversion failed", -1);
+    } else {
+        sqlite3_result_text(context, result, -1, SQLITE_TRANSIENT);
+    }
+}
+
 /*
  * Registration of functions in this file when this library is loaded
  */
@@ -106,5 +139,14 @@ int sqlite3_hms_init(sqlite3 *db,
                                  SQLITE_UTF8 | SQLITE_INNOCUOUS |
                                  SQLITE_DETERMINISTIC, 0, hms_to_sec_func,
                                  0, 0);
+    if (rc != SQLITE_OK)
+        return rc;
+    rc = sqlite3_create_function(db, "hms", 1,
+                                 SQLITE_UTF8 | SQLITE_INNOCUOUS |
+                                 SQLITE_DETERMINISTIC, 0, sec_to_hms_func,
+                                 0, 0);
+    if (rc != SQLITE_OK)
+        return rc;
+
     return rc;
 }
