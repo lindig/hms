@@ -6,6 +6,8 @@ all: mac
 mac:	hms.dylib
 linux:	hms.so
 
+SQL = ../sqlite/sqlite-autoconf-3490200/sqlite3
+
 CFLAGS += -I ../sqlite/sqlite-autoconf-3490200
 CFLAGS += -g -fPIC
 
@@ -28,3 +30,6 @@ clean:
 
 format:
 	find . -name '*.[ch]' | xargs -n1 indent -nut $(INDENT)
+
+test: test-1.sql test-1.csv
+	$(SQL) < test-1.sql

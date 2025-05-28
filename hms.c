@@ -10,11 +10,13 @@
 SQLITE_EXTENSION_INIT1
 #include <assert.h>
 /*
- * Parse an hour:min:sec.s string into a float of seconds. Return -1.0 on
- * parsing errors.
+ * Parse a duration string into a float of seconds.
+ * Recognizes formats: H:M:S.f, M:S.f, and S.f
+ * Returns the total seconds as a float, or -1.0 on parsing errors.
  *
- * Shortcomings: %f accepts a negative number; there could be input beyond the
- * accepted string.
+ * Remaining shortcomings (as noted in the original):
+ * - %f accepts a negative number (this is standard behavior for scanf).
+ * - There could be input beyond the accepted string (this is also standard scanf behavior).
  */
 static float hms_to_sec(const char *duration)
 {
@@ -38,9 +40,9 @@ static float hms_to_sec(const char *duration)
 }
 
 /*
- * Format a positive float duration (seconds) into a hh:mm:ss.s string buffer
- * provided by the caller. Returns the string buffer on success or NULL on
- * failure.
+ * Format a positive float duration (seconds) into a hh:mm:ss.sss string
+ * buffer provided by the caller. Returns the string buffer on success
+ * or NULL on failure.
  */
 static char *sec_to_hms(double seconds, char *buffer, size_t buffer_size)
 {
@@ -64,13 +66,14 @@ static char *sec_to_hms(double seconds, char *buffer, size_t buffer_size)
 }
 
 /*
- * Implementation for sqlite
+ * Implementation for the 'duration' sqlite function (string to seconds)
  */
-static void hms_to_sec_func(sqlite3_context * context, int argc, sqlite3_value ** argv)
+static void hms_to_sec_func(sqlite3_context * context, int argc,
+                             sqlite3_value ** argv)
 {
     if (argc != 1) {
         sqlite3_result_error(context,
-                             "duration() requires exactly one argument",
+                             "duration() requires exactly one argument.",
                              -1);
         return;
     }
@@ -80,26 +83,30 @@ static void hms_to_sec_func(sqlite3_context * context, int argc, sqlite3_value *
         return;
     }
     double seconds = hms_to_sec((const char *)text);
-    if (seconds >= 0.0)
+    if (seconds >= 0.0) {
         sqlite3_result_double(context, seconds);
-    else
+    } else {
         sqlite3_result_error(context,
-                             "duration() failed to parse argument", -1);
-
+                       "duration() failed to parse the duration string.",
+                             -1);
+    }
     return;
 }
 
+/*
+ * Implementation for the 'hms' sqlite function (seconds to string)
+ */
 static void sec_to_hms_func(sqlite3_context * context,
                              int argc, sqlite3_value ** argv)
 {
     if (argc != 1) {
         sqlite3_result_error(context,
-                             "hms() requires exactly one argument", -1);
+                             "hms() requires exactly one argument.", -1);
         return;
     }
     int value_type = sqlite3_value_numeric_type(argv[0]);
     if (value_type != SQLITE_INTEGER && value_type != SQLITE_FLOAT) {
-        sqlite3_result_error(context, "hms() argument must be a number",
+        sqlite3_result_error(context, "hms() argument must be a number.",
                              -1);
         return;
     }
@@ -111,19 +118,18 @@ static void sec_to_hms_func(sqlite3_context * context,
     }
 
     char buffer[64];
-    char *result = sec_to_hms(seconds, buffer, sizeof buffer);
+    char *result = sec_to_hms(seconds, buffer, sizeof(buffer));
 
     if (!result) {
-        sqlite3_result_error(context, "hms() conversion failed", -1);
+        sqlite3_result_error(context, "hms() conversion failed.", -1);
     } else {
         sqlite3_result_text(context, result, -1, SQLITE_TRANSIENT);
     }
 }
 
 /*
- * Registration of functions in this file when this library is loaded
+ * Registration of functions when this library is loaded
  */
-
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
@@ -133,16 +139,18 @@ __declspec(dllexport)
     int rc = SQLITE_OK;
     SQLITE_EXTENSION_INIT2(pApi);
     (void)pzErrMsg;             /* Unused parameter */
+
     rc = sqlite3_create_function(db, "duration", 1,
                                  SQLITE_UTF8 | SQLITE_INNOCUOUS |
-                                 SQLITE_DETERMINISTIC, 0, hms_to_sec_func,
-                                 0, 0);
+                                 SQLITE_DETERMINISTIC, NULL,
+                                 hms_to_sec_func, NULL, NULL);
     if (rc != SQLITE_OK)
         return rc;
+
     rc = sqlite3_create_function(db, "hms", 1,
                                  SQLITE_UTF8 | SQLITE_INNOCUOUS |
-                                 SQLITE_DETERMINISTIC, 0, sec_to_hms_func,
-                                 0, 0);
+                                 SQLITE_DETERMINISTIC, NULL,
+                                 sec_to_hms_func, NULL, NULL);
     if (rc != SQLITE_OK)
         return rc;
 
