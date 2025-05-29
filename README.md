@@ -1,4 +1,6 @@
 
+![Build](https://github.com/lindig/hms/workflows/makefile/badge.svg)
+
 # HMS
 
 Extension for [sqlite] to parse a duration denoted in
