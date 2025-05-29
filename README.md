@@ -1,5 +1,5 @@
 
-![Build](https://github.com/lindig/hms/workflows/makefile/badge.svg)
+[![Build Status](https://github.com/lindig/hms/actions/workflows/makefile.yml/badge.svg)](https://github.com/lindig/hms/actions/workflows/makefile.yml)
 
 # HMS
 
