@@ -7,6 +7,7 @@ mac:	hms.dylib
 linux:	hms.so
 
 SQL = ../sqlite/sqlite-autoconf-3490200/sqlite3
+SQL = sqlite3
 
 CFLAGS += -I ../sqlite/sqlite-autoconf-3490200
 CFLAGS += -g -fPIC
