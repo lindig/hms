@@ -33,4 +33,4 @@ format:
 	find . -name '*.[ch]' | xargs -n1 indent -nut $(INDENT)
 
 test: test-1.sql test-1.csv
-	$(SQL) < test-1.sql
+	$(SQL) < test-1.sql | tee /dev/tty | cmp /dev/null -
