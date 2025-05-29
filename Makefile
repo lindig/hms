@@ -1,12 +1,11 @@
 #
 #
 
-all: mac
+all: macos
 
-mac:	hms.dylib
+macos:	hms.dylib
 linux:	hms.so
 
-SQL = ../sqlite/sqlite-autoconf-3490200/sqlite3
 SQL = sqlite3
 
 CFLAGS += -I ../sqlite/sqlite-autoconf-3490200
@@ -32,5 +31,5 @@ clean:
 format:
 	find . -name '*.[ch]' | xargs -n1 indent -nut $(INDENT)
 
-test: test-1.sql test-1.csv
-	$(SQL) < test-1.sql | tee | cmp /dev/null -
+test:
+	for f in *.sql; do $(SQL) < $$f | tee | cmp /dev/null -; done

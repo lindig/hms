@@ -43,6 +43,14 @@ On Linux the required package is:
 $ make linux
 ```
 
+## Testing
+
+Some simple regression testing.
+
+```sh
+$ make test
+```
+
 ## Error Handling
 
 As can be seen above, if duration() can't parse its argument it throws
