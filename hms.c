@@ -1,5 +1,7 @@
 /*
  * Extension for sqlite to parse a duration.
+ *
+ * Copyright (c) 2025, Christian Lindig <lindig@gmail.com>
  */
 
 #include <stdio.h>
