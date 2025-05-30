@@ -1,10 +1,13 @@
 
 [![Build Status](https://github.com/lindig/hms/actions/workflows/makefile.yml/badge.svg)](https://github.com/lindig/hms/actions/workflows/makefile.yml)
 
+----
+
 # HMS
 
-Extension for [sqlite] to parse a duration denoted in
-a string as hours:minutes:seconds into seconds. It implements:
+HMS is an extension for [sqlite] to parse a duration denoted in a string
+as hours:minutes:seconds into seconds. It implementsi two new
+primitives:
 
 * `duration(string)` - parse hh:mm:ss.s to seconds
 * `hms(number)`- convert seconds to a `hh:mm:ss.s` string
@@ -14,12 +17,16 @@ sqlite> .load hms
 sqlite> select duration("0:2:5.2");;
 125.199996948242
 
-sqlite> select duration("abc");;
-Runtime error: duration failed to parse argument
-
 sqlite> select hms(122.3);
 0:02:02.300
+
+sqlite> select duration("abc");;
+Runtime error: duration failed to parse argument
 ```
+
+As with other [sqlite] extensions, it is loaded at runtime using `.load`
+into the [sqlite] shell. See the [sqlite] documentation how to use
+extensions when embedding [sqlite] into an application as a library.
 
 ## Building
 
@@ -43,6 +50,8 @@ On Linux the required package is:
 $ make linux
 ```
 
+The above is also used in the GitHub CI workflow.
+
 ## Testing
 
 Some simple regression testing.
@@ -55,5 +64,11 @@ $ make test
 
 As can be seen above, if duration() can't parse its argument it throws
 an error. Should this result in NULL instead?
+
+## Limitations
+
+* Durations must be positive, hence `-2:0.0` is not recognised as a
+  duration. Likewise, `hms(-120.0)` is not supported.
+* Parsing is not entirely robust.
 
 [sqlite]: https://sqlite.org
