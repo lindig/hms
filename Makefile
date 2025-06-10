@@ -9,7 +9,7 @@ linux:	hms.so
 SQL = sqlite3
 
 CFLAGS += -I ../sqlite/sqlite-autoconf-3490200
-CFLAGS += -g -fPIC
+CFLAGS += -g -fPIC -Wall
 
 # K&R style indentation
 INDENT += -nbad -bap -nbc -br -brs -c33 -cd33 -ncdb -ce -ci4 -cli0
