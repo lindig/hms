@@ -127,9 +127,9 @@ static void sec_to_hms_func(sqlite3_context * context,
     char *result = sec_to_hms(seconds, buffer, sizeof(buffer));
     if (!result) {
         sqlite3_result_error(context, "hms() conversion failed.", -1);
-    } else {
-        sqlite3_result_text(context, result, -1, SQLITE_TRANSIENT);
+        return;
     }
+    sqlite3_result_text(context, result, -1, SQLITE_TRANSIENT);
 }
 
 /*
