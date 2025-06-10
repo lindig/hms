@@ -107,21 +107,21 @@ static void sec_to_hms_func(sqlite3_context * context,
         return;
     }
     int value_type = sqlite3_value_numeric_type(argv[0]);
-    if (value_type != SQLITE_INTEGER && value_type != SQLITE_FLOAT) {
-        sqlite3_result_error(context, "hms() argument must be a number.",
-                             -1);
-        return;
-    }
     double seconds;
-    if (value_type == SQLITE_INTEGER) {
+    switch (value_type) {
+    case SQLITE_INTEGER:
         seconds = (double)sqlite3_value_int64(argv[0]);
-    } else {
+        break;
+    case SQLITE_FLOAT:
         seconds = sqlite3_value_double(argv[0]);
+        break;
+    default:
+        sqlite3_result_error(context, "hms() argument must be a number.", -1);
+        break;
     }
 
     char buffer[64];
     char *result = sec_to_hms(seconds, buffer, sizeof(buffer));
-
     if (!result) {
         sqlite3_result_error(context, "hms() conversion failed.", -1);
     } else {
