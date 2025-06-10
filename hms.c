@@ -115,6 +115,9 @@ static void sec_to_hms_func(sqlite3_context * context,
     case SQLITE_FLOAT:
         seconds = sqlite3_value_double(argv[0]);
         break;
+    case SQLITE_NULL:
+        sqlite3_result_null(context);
+        break;
     default:
         sqlite3_result_error(context, "hms() argument must be a number.", -1);
         break;
