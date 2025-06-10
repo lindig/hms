@@ -6,7 +6,7 @@
 # HMS
 
 HMS is an extension for [sqlite] to parse a duration denoted in a string
-as hours:minutes:seconds into seconds. It implementsi two new
+as hours:minutes:seconds into seconds. It implements two new
 primitives:
 
 * `duration(string)` - parse hh:mm:ss.s to seconds
