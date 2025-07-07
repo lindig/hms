@@ -1,10 +1,10 @@
 #
 #
 
-all: macos
+all: $(shell uname -s)
 
-macos:	hms.dylib
-linux:	hms.so
+Darwin: hms.dylib
+Linux:  hms.so
 
 SQL = sqlite3
 
