@@ -28,11 +28,11 @@ static float hms_to_sec(const char *duration)
 
     items = sscanf(duration, "%u:%u:%f", &hours, &minutes, &seconds);
     if (items == 3) {
-        return (float)hours *3600.0 + (float)minutes *60.0 + seconds;
+        return (float) hours *3600.0 + (float) minutes *60.0 + seconds;
     }
     items = sscanf(duration, "%u:%f", &minutes, &seconds);
     if (items == 2) {
-        return (float)minutes *60.0 + seconds;
+        return (float) minutes *60.0 + seconds;
     }
     items = sscanf(duration, "%f", &seconds);
     if (items == 1) {
@@ -54,8 +54,8 @@ static char *sec_to_hms(double seconds, char *buffer, size_t buffer_size)
     double whole_seconds = floor(seconds);
     double rem = fmod(seconds, 60.0);
 
-    int hours = (int)(whole_seconds / 3600);
-    int secs = (int)whole_seconds % 3600;
+    int hours = (int) (whole_seconds / 3600);
+    int secs = (int) whole_seconds % 3600;
     int mins = secs / 60;
 
     int ret = snprintf(buffer, buffer_size, "%d:%02d:%06.3f",
@@ -70,8 +70,8 @@ static char *sec_to_hms(double seconds, char *buffer, size_t buffer_size)
 /*
  * Implementation for the 'duration' sqlite function (string to seconds)
  */
-static void hms_to_sec_func(sqlite3_context * context, int argc,
-                             sqlite3_value ** argv)
+static void hms_to_sec_func(sqlite3_context *context, int argc,
+                            sqlite3_value **argv)
 {
     if (argc != 1) {
         sqlite3_result_error(context,
@@ -89,13 +89,12 @@ static void hms_to_sec_func(sqlite3_context * context, int argc,
             sqlite3_result_null(context);
             break;
         }
-        seconds = hms_to_sec((const char *)text);
+        seconds = hms_to_sec((const char *) text);
         if (seconds >= 0.0) {
             sqlite3_result_double(context, seconds);
         } else {
-            sqlite3_result_error(context,
-                       "duration() failed to parse the duration string.",
-                                 -1);
+            /* parse error, we return NULL */
+            sqlite3_result_null(context);
         }
         break;
     case SQLITE_NULL:
@@ -113,8 +112,8 @@ static void hms_to_sec_func(sqlite3_context * context, int argc,
 /*
  * Implementation for the 'hms' sqlite function (seconds to string)
  */
-static void sec_to_hms_func(sqlite3_context * context,
-                             int argc, sqlite3_value ** argv)
+static void sec_to_hms_func(sqlite3_context *context,
+                            int argc, sqlite3_value **argv)
 {
     if (argc != 1) {
         sqlite3_result_error(context,
@@ -125,7 +124,7 @@ static void sec_to_hms_func(sqlite3_context * context,
     double seconds;
     switch (value_type) {
     case SQLITE_INTEGER:
-        seconds = (double)sqlite3_value_int64(argv[0]);
+        seconds = (double) sqlite3_value_int64(argv[0]);
         break;
     case SQLITE_FLOAT:
         seconds = sqlite3_value_double(argv[0]);
@@ -154,12 +153,12 @@ static void sec_to_hms_func(sqlite3_context * context,
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-    int sqlite3_hms_init(sqlite3 * db,
-                      char **pzErrMsg, const sqlite3_api_routines * pApi)
+int sqlite3_hms_init(sqlite3 *db,
+                     char **pzErrMsg, const sqlite3_api_routines *pApi)
 {
     int rc = SQLITE_OK;
     SQLITE_EXTENSION_INIT2(pApi);
-    (void)pzErrMsg;             /* Unused parameter */
+    (void) pzErrMsg;            /* Unused parameter */
 
     rc = sqlite3_create_function(db, "duration", 1,
                                  SQLITE_UTF8 | SQLITE_INNOCUOUS |

@@ -19,9 +19,6 @@ sqlite> select duration("0:2:5.2");;
 
 sqlite> select hms(122.3);
 0:02:02.300
-
-sqlite> select duration("abc");;
-Runtime error: duration failed to parse argument
 ```
 
 As with other [sqlite] extensions, it is loaded at runtime using `.load`
@@ -62,8 +59,9 @@ $ make test
 
 ## Error Handling
 
-As can be seen above, if duration() can't parse its argument it throws
-an error. Should this result in NULL instead?
+I am not sure about the best strategy. I am changing to let functions
+return NULL instead of a runtime error; otherwise working with large
+tables can become annoying.
 
 ## Limitations
 
