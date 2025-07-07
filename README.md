@@ -34,7 +34,7 @@ source code. The resulting `hms.dylib` can be loaded into the sqlite
 shell.
 
 ```sh
-$ make macos
+$ make
 ```
 
 ## Linux
@@ -44,7 +44,7 @@ On Linux the required package is:
 * Debian [libsqlite3-dev](https://packages.debian.org/trixie/libsqlite3-dev)
 
 ```sh
-$ make linux
+$ make
 ```
 
 The above is also used in the GitHub CI workflow.
